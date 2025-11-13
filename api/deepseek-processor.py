@@ -4,14 +4,37 @@ import sys
 
 class handler(BaseHTTPRequestHandler):
     
+    def do_GET(self):
+        """处理GET请求 - 修复501错误"""
+        print(f"=== 收到GET请求: {self.path} ===", file=sys.stderr)
+        
+        if self.path == '/health' or self.path == '/webhook':
+            response = {
+                "status": "healthy", 
+                "service": "deepseek-processor",
+                "message": "服务正常运行中",
+                "usage": "请使用POST方法发送数据到/webhook"
+            }
+            self.send_success_response(response)
+        else:
+            self.send_error_response(404, {"error": "路径未找到"})
+    
     def do_POST(self):
         """处理POST请求"""
-        print("=== 收到POST请求 ===", file=sys.stderr)
+        print(f"=== 收到POST请求: {self.path} ===", file=sys.stderr)
         
         if self.path == '/webhook':
             self.handle_webhook()
         else:
             self.send_error_response(404, {"error": "路径未找到"})
+    
+    def do_OPTIONS(self):
+        """处理CORS预检请求"""
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
     
     def handle_webhook(self):
         """处理webhook数据"""
