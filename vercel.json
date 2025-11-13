@@ -1,9 +1,14 @@
 {
-  "version": 2,
-  "builds": [
-    {"src": "api/deepseek-processor.py", "use": "@vercel/python"}
-  ],
+  "functions": {
+    "api/deepseek-processor.py": {
+      "runtime": "python3.9"
+    }
+  },
   "routes": [
-    {"src": "/api/(.*)", "dest": "api/deepseek-processor.py"}
+    {
+      "src": "/webhook",
+      "methods": ["POST"],
+      "dest": "/api/deepseek-processor.py"
+    }
   ]
 }
